@@ -1,0 +1,16 @@
+{
+  "name": "youtube-stats",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node automated.js",
+    "automate": "node automated.js"
+  },
+  "dependencies": {
+    "googleapis": "^128.0.0",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3",
+    "google-auth-library": "^9.4.1",
+    "express": "^4.18.2"
+  }
+}
