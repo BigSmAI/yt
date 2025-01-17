@@ -2,11 +2,18 @@ import cron from 'node-cron';
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configuration pour servir les fichiers statiques
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Configuration de l'authentification YouTube
 const youtube = google.youtube({
@@ -55,7 +62,6 @@ async function appendToSheet(stats) {
 
 async function getChannelStats() {
   try {
-    // Obtenir les statistiques de la chaîne
     const channelResponse = await youtube.channels.list({
       part: 'statistics',
       id: process.env.CHANNEL_ID
@@ -63,11 +69,9 @@ async function getChannelStats() {
 
     const channelStats = channelResponse.data.items[0].statistics;
     
-    // Obtenir la date d'il y a 15 jours
     const fifteenDaysAgo = new Date();
     fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
     
-    // Obtenir les vidéos publiées ces 15 derniers jours
     const videosResponse = await youtube.search.list({
       part: 'id',
       channelId: process.env.CHANNEL_ID,
@@ -79,13 +83,11 @@ async function getChannelStats() {
 
     const videoIds = videosResponse.data.items.map(item => item.id.videoId);
     
-    // Obtenir les statistiques détaillées des vidéos
     const videoStats = await youtube.videos.list({
       part: 'statistics',
       id: videoIds.join(',')
     });
 
-    // Calculer les totaux
     const recentVideosStats = videoStats.data.items.reduce((acc, video) => {
       return {
         views: acc.views + parseInt(video.statistics.viewCount),
@@ -100,9 +102,7 @@ async function getChannelStats() {
       likesLast15Days: recentVideosStats.likes
     };
 
-    // Ajouter les statistiques à la Google Sheet
     await appendToSheet(stats);
-    
     return stats;
   } catch (error) {
     console.error('Erreur:', error.message);
@@ -110,9 +110,9 @@ async function getChannelStats() {
   }
 }
 
-// Route pour vérifier que le service fonctionne
+// Route principale pour servir l'interface
 app.get('/', (req, res) => {
-  res.json({ status: 'Service en ligne' });
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Route pour déclencher manuellement la collecte
