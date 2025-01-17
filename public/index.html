@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques YouTube</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        #stats {
+            margin-top: 20px;
+        }
+        .stat-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Statistiques YouTube</h1>
+        <button onclick="getStats()">Voir les stats</button>
+        <div id="stats"></div>
+    </div>
+
+    <script>
+        async function getStats() {
+            const statsDiv = document.getElementById('stats');
+            statsDiv.innerHTML = 'Chargement...';
+            
+            try {
+                const response = await fetch('/collect');
+                const data = await response.json();
+                
+                statsDiv.innerHTML = `
+                    <div class="stat-item">Nombre d'abonnés total: ${data.totalSubscribers}</div>
+                    <div class="stat-item">Nouvelles vidéos (15 derniers jours): ${data.newVideosLast15Days}</div>
+                    <div class="stat-item">Vues totales (15 derniers jours): ${data.viewsLast15Days}</div>
+                    <div class="stat-item">Likes totaux (15 derniers jours): ${data.likesLast15Days}</div>
+                `;
+            } catch (error) {
+                statsDiv.innerHTML = 'Erreur lors de la récupération des statistiques';
+            }
+        }
+    </script>
+</body>
+</html>
